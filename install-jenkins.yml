@@ -1,0 +1,32 @@
+---
+- name: Install Jenkins
+  hosts: localhost
+  become: yes
+  # remote_user: azureuser
+  # become_user: root
+  tasks:
+  - name: Add APT key
+    shell: "{{item}}"
+    loop:
+      - sudo apt-get install openjdk-11-jdk
+      - wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+      - sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+
+  - name: update all
+    apt:
+      name: '*'
+      state: latest
+
+  - name: Install jenkins
+    apt:
+      name: jenkins
+      state: latest
+
+  - name: daemon-reload to pick up config changes
+    ansible.builtin.systemd:
+      daemon_reload: yes
+
+  - name: Start jenkins
+    ansible.builtin.systemd:
+      name: jenkins
+      state: started
